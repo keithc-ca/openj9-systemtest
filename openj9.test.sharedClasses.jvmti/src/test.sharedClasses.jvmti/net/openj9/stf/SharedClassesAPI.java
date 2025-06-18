@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2016, 2024 IBM Corp. and others
+* Copyright (c) 2016, 2025 IBM Corp. and others
 *
 * This program and the accompanying materials are made available under the
 * terms of the Eclipse Public License 2.0 which accompanies this distribution
@@ -24,6 +24,7 @@ package net.openj9.stf;
 import static net.adoptopenjdk.stf.extensions.core.StfCoreExtension.Echo.ECHO_OFF;
 import static net.adoptopenjdk.stf.extensions.core.StfCoreExtension.Echo.ECHO_ON;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -210,19 +211,27 @@ public class SharedClassesAPI implements SharedClassesPluginInterface {
 							.runClass(SharedClassesCacheChecker.class));
 			} else {
 				// Verify caches using a JVMTI native agent.
+				String nativeLibPath = System.getenv("NATIVE_TEST_LIBS");
+				if (nativeLibPath == null || nativeLibPath.isEmpty()) {
+					throw new IllegalStateException("NATIVE_TEST_LIBS is not set");
+				}
+				String nativePrefix = "lib";
 				String nativeExt;
 				if (PlatformFinder.isOSX()) {
 					nativeExt = ".dylib";
 				} else if (PlatformFinder.isWindows()) {
+					nativePrefix = "";
 					nativeExt = ".dll";
+					nativeLibPath = nativeLibPath.replaceFirst("^/cygdrive/([a-zA-Z])", "$1:");
+					nativeLibPath = nativeLibPath.replace('/', File.separatorChar);
 				} else {
 					nativeExt = ".so";
 				}
-				String nativePrefix =  PlatformFinder.isWindows() ? "" : "lib";
-				FileRef agent = test.env().findTestDirectory("openj9.test.sharedClasses.jvmti/bin/native")
-						.childDirectory(test.env().getPlatformSimple())
-						.childFile(nativePrefix + "sharedClasses" + nativeExt);
-				
+
+				String agentPath = nativeLibPath + File.separator
+						+ nativePrefix + "sharedClasses" + nativeExt;
+				FileRef agent = test.env().createFileRef(agentPath);
+
 				if (!cacheDir.isEmpty()) {
 					cacheDir = "," + cacheDir;
 				}
