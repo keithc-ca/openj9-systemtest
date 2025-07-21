@@ -47,9 +47,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 	<property name="openj9_test_sharedClasses_jvmti_module" value="test.sharedClasses.jvmti" />
 	<property name="openj9_test_sharedClasses_jvmti_src_dir" value="src/${openj9_test_sharedClasses_jvmti_module}" />
 	<property name="openj9_test_sharedClasses_jvmti_bin_dir" value="bin" />
-	<property name="openj9_test_sharedClasses_jvmti_native_src_dir" value="${basedir}/src/native" />
-	<property name="openj9_test_sharedClasses_jvmti_native_bin_dir" value="${basedir}/bin/native" />
-
+	
 	<property name="openj9_test_sharedClasses_jvmti_jar_file" value="${openj9_test_sharedClasses_jvmti_bin_dir}/${openj9_test_sharedClasses_jvmti_module}.jar" />
 
 	<!-- We need junit, stf, the sharedclasses stf extensions and the test.shardClasses tests to compile this project. -->
@@ -65,37 +63,12 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0-only WITH Classpath-ex
 	<target name="build-dependencies" depends="check-prereqs" >
 	</target>
 	
-	<target name="build" depends="check-prereqs, build-no-natives, build-natives">
+	<target name="build" depends="check-prereqs, build-no-natives">
 	</target>
 	
 	<target name="build-no-natives" depends="check-prereqs, build-dependencies, check-prereqs, build-archives">
 	</target>
-
-	<target name="build-natives" depends="check-prereqs, setup-native-build-command, build-natives-windows, build-natives-unix">
-	</target>
-
-	<target name="setup-native-build-command">
-		<echo message="building natives for java-platform ${java_platform}"/>
-		<property name="openj9_test_sharedClasses_jvmti_native_build_command" value='${setup_windows_build_env}${MAKE} -C ${openj9_test_sharedClasses_jvmti_native_src_dir} SRCDIR=${openj9_test_sharedClasses_jvmti_native_src_dir} JAVA_HOME=${java_home} OUTDIR=${openj9_test_sharedClasses_jvmti_native_bin_dir}'/>
-		<tempfile property="openj9_test_sharedClasses_jvmti_native_build_command_file" destDir="${java.io.tmpdir}" prefix="openj9.build.command."/>
-	</target>
-
-	<target name="build-natives-windows" if="${windows_native_compiler_present}">
-		<echo message="${openj9_test_sharedClasses_jvmti_native_build_command}"/>
-		<echo message="${openj9_test_sharedClasses_jvmti_native_build_command}" file="${openj9_test_sharedClasses_jvmti_native_build_command_file}.bat"/>
-		<exec executable="${openj9_test_sharedClasses_jvmti_native_build_command_file}.bat" failonerror="true"/>
-		<delete file="${openj9_test_sharedClasses_jvmti_native_build_command_file}.bat" verbose="true"/>
-	</target>
-
-	<target name="build-natives-unix" unless="${is_windows}">
-		<echo message="${openj9_test_sharedClasses_jvmti_native_build_command}"/>
-		<echo message="${openj9_test_sharedClasses_jvmti_native_build_command}" file="${openj9_test_sharedClasses_jvmti_native_build_command_file}.sh"/>
-		<exec executable="/bin/sh" failonerror="true">
-			<arg value="${openj9_test_sharedClasses_jvmti_native_build_command_file}.sh"/>
-		</exec>
-		<delete file="${openj9_test_sharedClasses_jvmti_native_build_command_file}.sh" verbose="true"/>
-	</target>
-
+    
 	<target name="build-archives" depends="build-jar">
 	</target>
 
